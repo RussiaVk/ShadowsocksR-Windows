@@ -1,4 +1,4 @@
-name: Build ShadowsocksR
+name: Build ShadowsocksR (.NET Framework 4.8)
 
 on:
   push:
@@ -17,23 +17,24 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+    # .NET Framework 不用 setup-dotnet（可删）
 
-    - name: Restore
-      run: dotnet restore $env:Solution_Name
+    # 必须：MSBuild
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
 
+    # 还原 NuGet
+    - name: Restore NuGet packages
+      run: nuget restore $env:Solution_Name
+
+    # 编译（关键）
     - name: Build
-      run: dotnet build $env:Solution_Name -c $env:Configuration --no-restore
+      run: msbuild $env:Solution_Name /p:Configuration=$env:Configuration
 
-    - name: Publish
-      run: dotnet publish $env:Solution_Name -c $env:Configuration -r win-x64 --self-contained true --no-build
-
+    # 上传 exe（直接输出 bin）
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: shadowsocksr
+        name: shadowsocksr-net48
         path: |
-          **/publish/**
+          **/bin/${{ env.Configuration }}/**
