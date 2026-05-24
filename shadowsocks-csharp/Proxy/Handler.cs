@@ -498,7 +498,7 @@ namespace Shadowsocks.Proxy
 
         public bool TryReconnect()
         {
-            if (local_error)
+            if (local_error|| cfg == null)
             {
                 return false;
             }
